@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>CeneTracker</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0f1117; --s1:#181b24; --s2:#1e2130;
+  --b:rgba(255,255,255,0.07); --b2:rgba(255,255,255,0.13);
+  --t:#f0f0f0; --m:#6b7280;
+  --ac:#c8f135; --acd:rgba(200,241,53,0.11);
+  --gr:#34d399; --grd:rgba(52,211,153,0.1);
+  --re:#ff5555; --red:rgba(255,85,85,0.1);
+  --r:12px; --mono:'DM Mono',monospace; --sans:'Syne',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--t);font-family:var(--sans);max-width:430px;margin:0 auto;min-height:100vh;padding-bottom:84px}
+header{position:sticky;top:0;z-index:50;background:rgba(15,17,23,0.93);backdrop-filter:blur(20px);padding:18px 20px 14px;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:17px;font-weight:800;letter-spacing:-0.5px}
+.logo em{color:var(--ac);font-style:normal}
+.key-pill{font-family:var(--mono);font-size:10px;color:var(--m);background:var(--s1);border:1px solid var(--b);border-radius:20px;padding:4px 10px;cursor:pointer;transition:all .15s}
+.key-pill.ok{color:var(--gr);border-color:rgba(52,211,153,0.25)}
+nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(15,17,23,0.96);backdrop-filter:blur(20px);border-top:1px solid var(--b);display:flex;padding:10px 0 18px;z-index:50}
+.nb{flex:1;background:none;border:none;color:var(--m);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-family:var(--mono);font-size:9px;letter-spacing:0.5px;transition:color .15s}
+.nb.on{color:var(--ac)}
+.nb-ic{font-size:18px;line-height:1}
+.pg{display:none;padding:20px}
+.pg.on{display:block}
+.sec-lbl{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--m);text-transform:uppercase;margin-bottom:10px}
+.add-row{display:flex;gap:8px;margin-bottom:16px}
+input[type=text]{flex:1;background:var(--s1);border:1px solid var(--b);border-radius:var(--r);padding:12px 14px;color:var(--t);font-family:var(--sans);font-size:14px;outline:none;transition:border-color .15s}
+input[type=text]:focus{border-color:rgba(200,241,53,0.4)}
+input[type=text]::placeholder{color:var(--m)}
+.add-btn{background:var(--ac);color:#0f1117;border:none;border-radius:var(--r);width:44px;height:44px;font-size:22px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .12s}
+.add-btn:active{transform:scale(0.93)}
+.hint{background:var(--s2);border:1px solid var(--b);border-radius:var(--r);padding:13px 15px;font-family:var(--mono);font-size:11px;color:var(--m);line-height:1.7;margin-bottom:18px}
+.hint strong{color:var(--t);font-weight:500}
+.item-list{display:flex;flex-direction:column;gap:7px}
+.item-row{background:var(--s1);border:1px solid var(--b);border-radius:var(--r);display:flex;align-items:center;padding:13px 14px;gap:11px;animation:fIn .18s ease}
+@keyframes fIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.idot{width:7px;height:7px;border-radius:50%;background:var(--ac);flex-shrink:0}
+.iname{flex:1;font-size:15px;font-weight:600;letter-spacing:-0.2px}
+.istatus{font-family:var(--mono);font-size:11px;color:var(--m)}
+.istatus.ok{color:var(--gr)}
+.del{background:none;border:none;color:var(--m);font-size:18px;cursor:pointer;padding:2px 4px;line-height:1;transition:color .12s}
+.del:hover{color:var(--re)}
+.empty{text-align:center;padding:50px 20px;font-family:var(--mono);font-size:12px;color:var(--m);line-height:2}
+.search-btn{width:100%;margin-bottom:18px;background:var(--ac);color:#0f1117;border:none;border-radius:var(--r);padding:14px;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s}
+.search-btn:disabled{opacity:0.5;pointer-events:none}
+.price-cards{display:flex;flex-direction:column;gap:12px}
+.pcard{background:var(--s1);border:1px solid var(--b);border-radius:var(--r);overflow:hidden;animation:fIn .2s ease}
+.pcard-head{display:flex;align-items:center;justify-content:space-between;padding:13px 16px 11px}
+.pcard-name{font-size:15px;font-weight:600}
+.pbadge{font-family:var(--mono);font-size:10px;background:var(--acd);color:var(--ac);border:1px solid rgba(200,241,53,0.2);border-radius:20px;padding:3px 10px}
+.pbadge.idle{color:var(--m);background:var(--s2);border-color:var(--b)}
+.pbadge.err{color:var(--re);background:var(--red);border-color:rgba(255,85,85,0.2)}
+.top3{border-top:1px solid var(--b)}
+.t3r{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--b);transition:background .1s}
+.t3r:last-child{border-bottom:none}
+.t3r.best{background:var(--grd)}
+.t3rank{font-family:var(--mono);font-size:11px;color:var(--m);width:14px;flex-shrink:0;text-align:center}
+.t3r.best .t3rank{color:var(--gr)}
+.sdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.t3store{font-family:var(--mono);font-size:11px;color:var(--m);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.t3r.best .t3store{color:var(--t);font-weight:500}
+.t3unit{font-family:var(--mono);font-size:10px;color:var(--m)}
+.t3price{font-family:var(--mono);font-size:14px;font-weight:500;color:var(--t)}
+.t3r.best .t3price{color:var(--gr)}
+.t3pkg{font-family:var(--mono);font-size:10px;color:var(--m);text-align:right;min-width:56px}
+.t3r.best .t3pkg{color:var(--gr)}
+.skel{padding:12px 16px;display:flex;flex-direction:column;gap:10px}
+.skelr{height:11px;border-radius:5px;background:linear-gradient(90deg,var(--s2) 25%,var(--b2) 50%,var(--s2) 75%);background-size:200% 100%;animation:shim 1.4s infinite}
+@keyframes shim{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:200;align-items:flex-end;justify-content:center}
+.overlay.on{display:flex}
+.sheet{background:var(--s1);border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:430px;animation:su .2s ease}
+@keyframes su{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.sheet h3{font-size:16px;font-weight:700;margin-bottom:6px}
+.sheet p{font-size:12px;color:var(--m);font-family:var(--mono);margin-bottom:16px;line-height:1.6}
+.sheet input{width:100%;font-family:var(--mono);font-size:12px;margin-bottom:12px}
+.sh-save{width:100%;background:var(--ac);color:#0f1117;border:none;border-radius:var(--r);padding:13px;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer}
+.sh-close{width:100%;margin-top:8px;background:none;color:var(--m);border:1px solid var(--b);border-radius:var(--r);padding:11px;font-family:var(--sans);font-size:13px;cursor:pointer}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Cene<em>Tracker</em></div>
+  <div class="key-pill" id="keyPill" onclick="openKey()">API ključ</div>
+</header>
+
+<div class="pg on" id="pg-items">
+  <div class="sec-lbl">Moji izdelki</div>
+  <div class="add-row">
+    <input type="text" id="newItem" placeholder="npr. mleko, kruh, jogurt..." onkeydown="if(event.key==='Enter')addItem()">
+    <button class="add-btn" onclick="addItem()">+</button>
+  </div>
+  <div class="hint">
+    Dodaj izdelke, ki jih redno kupiš.<br>
+    Na strani <strong>Cene</strong> AI poišče 3 najugodnejše cene na kg ali enoto pri Lidl, Hofer, Mercator, Spar, Tuš in Eurospin.
+  </div>
+  <div class="item-list" id="itemList"></div>
+</div>
+
+<div class="pg" id="pg-prices">
+  <button class="search-btn" id="searchBtn" onclick="searchAll()">
+    <span id="searchTxt">↻ Poišči trenutne cene</span>
+  </button>
+  <div class="sec-lbl" id="pLbl" style="display:none">Najugodnejše cene · €/kg ali enoto</div>
+  <div class="price-cards" id="priceCards"></div>
+</div>
+
+<nav>
+  <button class="nb on" id="nb-items" onclick="showPage('items')">
+    <span class="nb-ic">☰</span><span>izdelki</span>
+  </button>
+  <button class="nb" id="nb-prices" onclick="showPage('prices')">
+    <span class="nb-ic">◈</span><span>cene</span>
+  </button>
+</nav>
+
+<div class="overlay" id="keyOvl" onclick="if(event.target===this)closeKey()">
+  <div class="sheet">
+    <h3>Claude API ključ</h3>
+    <p>Potreben za AI iskanje cen.<br>Dobiš ga brezplačno na console.anthropic.com</p>
+    <input type="text" id="keyInp" placeholder="sk-ant-...">
+    <button class="sh-save" onclick="saveKey()">Shrani ključ</button>
+    <button class="sh-close" onclick="closeKey()">Zapri</button>
+  </div>
+</div>
+
+<script>
+const STORE_CLR={'Lidl':'#0050aa','Hofer':'#e30613','Mercator':'#e31e24','Spar':'#007a3d','Tuš':'#f7a600','Eurospin':'#003da5'};
+let items=[], cache={}, apiKey='';
+
+function load(){
+  try{items=JSON.parse(localStorage.getItem('ct_items')||'[]')}catch{items=[]}
+  try{cache=JSON.parse(localStorage.getItem('ct_cache')||'{}')}catch{cache={}}
+  apiKey=localStorage.getItem('ct_key')||'';
+  updKeyPill();
+}
+function save(){
+  localStorage.setItem('ct_items',JSON.stringify(items));
+  localStorage.setItem('ct_cache',JSON.stringify(cache));
+  localStorage.setItem('ct_key',apiKey);
+}
+
+function showPage(n){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
+  document.getElementById('pg-'+n).classList.add('on');
+  document.getElementById('nb-'+n).classList.add('on');
+  if(n==='prices') renderCards();
+}
+
+function addItem(){
+  const inp=document.getElementById('newItem');
+  const name=inp.value.trim();
+  if(!name) return;
+  if(items.find(i=>i.name.toLowerCase()===name.toLowerCase())){inp.value='';return;}
+  items.push({id:Date.now(),name});
+  inp.value='';
+  save();
+  renderItems();
+}
+function delItem(id){
+  items=items.filter(i=>i.id!==id);
+  delete cache[id];
+  save();
+  renderItems();
+}
+function renderItems(){
+  const el=document.getElementById('itemList');
+  if(!items.length){
+    el.innerHTML='<div class="empty">Ni dodanih izdelkov.<br>Vnesi prvi artikel zgoraj.</div>';
+    return;
+  }
+  el.innerHTML=items.map(it=>{
+    const d=cache[it.id];
+    const has=d&&d.top3&&d.top3.length;
+    return `<div class="item-row">
+      <div class="idot"></div>
+      <div class="iname">${x(it.name)}</div>
+      <div class="istatus${has?' ok':''}">${has?d.top3[0].pricePerKg+' €/kg':'ni cen'}</div>
+      <button class="del" onclick="delItem(${it.id})">×</button>
+    </div>`;
+  }).join('');
+}
+
+function renderCards(){
+  const el=document.getElementById('priceCards');
+  if(!items.length){
+    el.innerHTML='<div class="empty">Najprej dodaj izdelke.</div>';
+    document.getElementById('pLbl').style.display='none';
+    return;
+  }
+  document.getElementById('pLbl').style.display='block';
+  el.innerHTML=items.map(it=>buildCard(it,cache[it.id])).join('');
+}
+function buildCard(it,d){
+  let badge,body;
+  if(!d){
+    badge=`<span class="pbadge idle">ni podatkov</span>`;body='';
+  } else if(d.loading){
+    badge=`<span class="pbadge idle">iščem...</span>`;
+    body=`<div class="skel"><div class="skelr" style="width:78%"></div><div class="skelr" style="width:62%"></div><div class="skelr" style="width:70%"></div></div>`;
+  } else if(d.error){
+    badge=`<span class="pbadge err">napaka</span>`;
+    body=`<div style="padding:10px 16px;font-family:var(--mono);font-size:11px;color:var(--re)">${x(d.error)}</div>`;
+  } else {
+    const t=d.top3||[];
+    badge=`<span class="pbadge">${t.length?'top '+t.length:'ni cen'}</span>`;
+    body=t.length?`<div class="top3">${t.map((r,i)=>`
+      <div class="t3r${i===0?' best':''}">
+        <div class="t3rank">${i+1}</div>
+        <div class="sdot" style="background:${STORE_CLR[r.store]||'#888'}"></div>
+        <div class="t3store">${x(r.store)}</div>
+        <div class="t3unit">${x(r.unit||'')}</div>
+        <div class="t3price">${r.price} €</div>
+        <div class="t3pkg">${r.pricePerKg} €/kg</div>
+      </div>`).join('')}</div>`:
+      `<div style="padding:10px 16px;font-family:var(--mono);font-size:11px;color:var(--m)">Ni najdenih cen.</div>`;
+  }
+  return `<div class="pcard" id="card-${it.id}">
+    <div class="pcard-head"><div class="pcard-name">${x(it.name)}</div>${badge}</div>${body}
+  </div>`;
+}
+function updCard(it,d){
+  const el=document.getElementById('card-'+it.id);
+  if(el) el.outerHTML=buildCard(it,d);
+}
+
+async function searchAll(){
+  if(!apiKey){openKey();return;}
+  if(!items.length){showPage('items');return;}
+  const btn=document.getElementById('searchBtn');
+  const txt=document.getElementById('searchTxt');
+  btn.disabled=true; txt.textContent='⏳ Iščem...';
+  document.getElementById('pLbl').style.display='block';
+  for(const it of items){
+    cache[it.id]={loading:true};
+    updCard(it,{loading:true});
+    cache[it.id]=await fetchItem(it.name);
+    save();
+    updCard(it,cache[it.id]);
+    renderItems();
+  }
+  btn.disabled=false; txt.textContent='↻ Poišči trenutne cene';
+}
+
+async function fetchItem(name){
+  const p=`Poišči TRENUTNE maloprodajne cene za artikel "${name}" v slovenskih trgovinah: Lidl, Hofer, Mercator, Spar, Tuš, Eurospin.
+
+Navodila:
+- Poišči standardne pakete tega artikla
+- Izračunaj ceno na kg ali liter (pricePerKg) - to je ključno
+- Razvrsti po najnižji ceni na kg/l
+- Vrni TOP 3 najugodnejše možnosti
+
+Odgovori SAMO z JSON brez markdown:
+{"item":"${name}","top3":[{"store":"Lidl","product":"naziv","price":0.99,"unit":"1 L","pricePerKg":"0.99"}]}
+
+Razvrsti po pricePerKg naraščajoče.`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1024,
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        messages:[{role:'user',content:p}]
+      })
+    });
+    if(!res.ok){
+      const e=await res.json().catch(()=>({}));
+      return{error:e.error?.message||'API napaka '+res.status};
+    }
+    const data=await res.json();
+    const raw=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    let parsed=null;
+    try{
+      const m=raw.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
+      if(m) parsed=JSON.parse(m[0]);
+    }catch{}
+    if(!parsed||!Array.isArray(parsed.top3)) return{error:'Ni veljavnih podatkov.'};
+    const top3=parsed.top3.slice(0,3).map(r=>({
+      store:String(r.store||''),
+      product:String(r.product||''),
+      price:Number(r.price).toFixed(2),
+      unit:String(r.unit||''),
+      pricePerKg:Number(r.pricePerKg).toFixed(2)
+    })).sort((a,b)=>parseFloat(a.pricePerKg)-parseFloat(b.pricePerKg));
+    return{top3,at:new Date().toLocaleTimeString('sl-SI',{hour:'2-digit',minute:'2-digit'})};
+  }catch(e){
+    return{error:'Napaka: '+e.message};
+  }
+}
+
+function openKey(){document.getElementById('keyInp').value=apiKey;document.getElementById('keyOvl').classList.add('on')}
+function closeKey(){document.getElementById('keyOvl').classList.remove('on')}
+function saveKey(){apiKey=document.getElementById('keyInp').value.trim();save();updKeyPill();closeKey()}
+function updKeyPill(){
+  const p=document.getElementById('keyPill');
+  p.textContent=apiKey?'✓ API ključ':'API ključ';
+  p.className='key-pill'+(apiKey?' ok':'');
+}
+function x(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+load();
+renderItems();
+if(items.length) renderCards();
+</script>
+</body>
+</html>
