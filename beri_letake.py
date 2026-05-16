@@ -46,17 +46,25 @@ def razcleni_izdelke(html, store):
     
     return rezultati
 
+def normaliziraj(s):
+    """Odstrani presledke, pomišljaje, naredi male črke."""
+    import re
+    s = s.lower()
+    s = re.sub(r'[-_]', ' ', s)
+    s = re.sub(r'\s+', ' ', s).strip()
+    return s
+
 def ujemi_artikel(naziv, items):
     """Poišče kateri artikel iz seznama ustreza nazivu v letaku."""
-    naziv_lower = naziv.lower()
+    naziv_n = normaliziraj(naziv)
     for item in items:
-        item_lower = item["name"].lower()
-        # Preveri ali se ime artikla pojavi v nazivu
-        kljucne = item_lower.split()
-        if all(k in naziv_lower for k in kljucne):
+        item_n = normaliziraj(item["name"])
+        # Vse ključne besede artikla morajo biti v nazivu
+        kljucne = [k for k in item_n.split() if len(k) > 2]
+        if kljucne and all(k in naziv_n for k in kljucne):
             return item
         # Ali obratno
-        if item_lower in naziv_lower:
+        if item_n in naziv_n:
             return item
     return None
 
@@ -74,6 +82,7 @@ def poisci_cene(items_data, api_key):
             vsi = razcleni_izdelke(html, store)
             
             najdeno = 0
+            if vsi: print(f"    Vzorec izdelkov: {[v['product'] for v in vsi[:8]]}")
             for item in items:
                 ujemanja = []
                 for izdelek in vsi:

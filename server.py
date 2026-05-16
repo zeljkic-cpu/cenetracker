@@ -172,6 +172,27 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def log_message(self, format, *args):
         pass
 
+    def do_GET(self):
+        if self.path == '/update':
+            import subprocess
+            try:
+                result = subprocess.run(['git', 'pull', 'origin', 'main'],
+                    capture_output=True, text=True, cwd=os.path.dirname(os.path.abspath(__file__)))
+                output = result.stdout + result.stderr
+                self.send_response(200)
+                self.cors()
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({"ok": True, "msg": output}).encode())
+                print(f"🔄 Posodobitev: {output.strip()}")
+            except Exception as e:
+                self.send_response(500)
+                self.cors()
+                self.end_headers()
+                self.wfile.write(json.dumps({"ok": False, "msg": str(e)}).encode())
+            return
+        super().do_GET()
+
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 print(f"\n  CeneTracker strežnik zagnan!")
 print(f"  Odpri: http://localhost:{PORT}/app.html")

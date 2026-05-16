@@ -107,7 +107,10 @@ input[type=text]::placeholder{color:var(--m)}
 
 <header>
   <div class="logo">Cene<em>Tracker</em></div>
-  <div class="key-pill" id="keyPill" onclick="openKey()">API ključ</div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <div class="key-pill" id="keyPill" onclick="openKey()">API ključ</div>
+    <div class="key-pill" id="updateBtn" onclick="posodobiApp()" style="color:var(--ac);border-color:rgba(200,241,53,0.25)">↻ Posodobi</div>
+  </div>
 </header>
 
 <!-- STRAN 1: IZDELKI -->
@@ -420,6 +423,22 @@ function updKeyPill(){const p=document.getElementById('keyPill');p.textContent=a
 function x(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
 
+async function posodobiApp(){
+  const btn=document.getElementById('updateBtn');
+  btn.textContent='↻ Posodabljam...';
+  try{
+    const r=await fetch('http://localhost:7777/update').then(r=>r.json());
+    if(r.msg.includes('Already up to date')){
+      btn.textContent='✓ Že posodobljeno';
+    } else {
+      btn.textContent='✓ Posodobljeno!';
+      setTimeout(()=>location.reload(),1500);
+    }
+  }catch(e){
+    btn.textContent='✗ Napaka';
+  }
+  setTimeout(()=>btn.textContent='↻ Posodobi',3000);
+}
 load();renderItems();if(items.length)renderCards();
 </script>
 </body>
