@@ -254,6 +254,10 @@ function buildCard(it,d){
   if(!d){badge='<span class="pbadge idle">ni podatkov</span>';body='';}
   else if(d.loading){badge='<span class="pbadge idle">ischem...</span>';body='<div class="skel"><div class="skelr" style="width:78%"></div><div class="skelr" style="width:62%"></div><div class="skelr" style="width:70%"></div></div>';}
   else if(d.error){badge='<span class="pbadge err">napaka</span>';body='<div style="padding:10px 16px;font-family:var(--mono);font-size:11px;color:var(--re)">'+x(d.error)+'</div>';}
+  else if(d.top3&&d.top3.length===0){
+    badge='<span class="pbadge idle">ni v akciji</span>';
+    body='<div style="padding:10px 16px;font-family:var(--mono);font-size:11px;color:var(--m)">Tega tedna ni v letaku.</div>';
+  }
   else{
     const t=d.top3||[];
     badge='<span class="pbadge">'+(t.length?'top '+t.length:'ni cen')+'</span>';
