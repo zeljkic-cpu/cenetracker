@@ -82,7 +82,13 @@ def poisci_cene(items_data, api_key):
             vsi = razcleni_izdelke(html, store)
             
             najdeno = 0
-            if vsi: print(f"    Vzorec izdelkov: {[v['product'] for v in vsi[:8]]}")
+            # Shrani vse izdelke letaka za prikaz v appu
+            all_items_for_letak = [{"product": v["product"], "price": round(v["price"],2)} for v in vsi]
+            
+            # Shrani vse izdelke tega letaka v results
+            rezultati["_store_"+store] = all_items_for_letak
+            
+            if vsi: print(f"    Vzorec: {[v['product'] for v in vsi[:5]]}")
             for item in items:
                 ujemanja = []
                 for izdelek in vsi:

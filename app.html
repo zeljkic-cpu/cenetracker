@@ -309,9 +309,13 @@ async function searchAll(){
         console.log('Prices received:', JSON.stringify(prices).substring(0,200));
         items.forEach(function(it){
           const p=prices[String(it.id)];
-          console.log('Item',it.id,it.name,'->',p?JSON.stringify(p).substring(0,100):'nothing');
           if(p&&p.top3!==undefined) cache[it.id]=p;
           else cache[it.id]={top3:[],at:''};
+        });
+        // Posodobi letake z vsemi izdelki
+        letaki.forEach(function(l){
+          const key='_store_'+l.store;
+          if(prices[key]) l.allItems=prices[key];
         });
         save();
         document.getElementById('pLbl').style.display='block';
@@ -414,36 +418,40 @@ function renderLetakList(){
   const el=document.getElementById('letakList');
   if(!letaki.length){el.innerHTML='<div style="font-family:var(--mono);font-size:11px;color:var(--m);padding:12px 0;text-align:center">Pritisni gumb zgoraj za iskanje letakov.</div>';return;}
   el.innerHTML=letaki.map(function(l,i){
+    // Vse cene iz tega letaka
+    var vsiIzdelki=l.allItems||[];
     var ceneHtml='';
-    items.forEach(function(it){
-      var d=cache[it.id];
-      if(d&&d.top3){
-        d.top3.filter(function(r){return r.store===l.store;}).forEach(function(r){
-          ceneHtml+='<div style="display:flex;justify-content:space-between;padding:6px 14px;border-top:1px solid var(--b)">'
-            +'<div style="font-family:var(--mono);font-size:11px;color:var(--m)">'+x(it.name)+'</div>'
-            +'<div style="display:flex;gap:12px">'
-            +'<div style="font-family:var(--mono);font-size:11px;color:var(--m)">'+x(r.unit)+'</div>'
-            +'<div style="font-family:var(--mono);font-size:13px;color:var(--gr);font-weight:500">'+r.price+' €</div>'
-            +'</div></div>';
+    if(vsiIzdelki.length){
+      ceneHtml=vsiIzdelki.map(function(it){
+        var isMoj=items.some(function(m){
+          var mn=m.name.toLowerCase().replace(/[-\s]/g,'');
+          var itn=it.product.toLowerCase().replace(/[-\s]/g,'');
+          return itn.includes(mn)||mn.includes(itn.substring(0,4));
         });
-      }
-    });
+        return '<div style="display:flex;justify-content:space-between;padding:6px 14px;border-top:1px solid var(--b);'+(isMoj?'background:var(--grd)':'')+'">'
+          +'<div style="font-family:var(--mono);font-size:11px;color:'+(isMoj?'var(--gr)':'var(--m)')+'">'+x(it.product)+'</div>'
+          +'<div style="font-family:var(--mono);font-size:13px;color:'+(isMoj?'var(--gr)':'var(--t)')+';font-weight:500">'+it.price+' €</div>'
+          +'</div>';
+      }).join('');
+    } else {
+      ceneHtml='<div style="padding:8px 14px;font-family:var(--mono);font-size:11px;color:var(--m);border-top:1px solid var(--b)">Poišči cene da se prikaže vsebina letaka.</div>';
+    }
     return '<div style="background:var(--s2);border-radius:8px;overflow:hidden;cursor:pointer" onclick="toggleLetak('+i+')">'
       +'<div style="display:flex;align-items:center;gap:10px;padding:10px 12px">'
       +'<div class="letak-check '+(l.checked?'done':'new')+'">'+(l.checked?'✓':'●')+'</div>'
       +'<div style="flex:1;min-width:0"><div class="letak-name">'+x(l.title)+'</div>'
-      +'<div class="letak-meta">'+x(l.store)+' · '+x(l.foundAt)+(l.validTo?' → '+x(l.validTo):'')+'</div></div>'
+      +'<div class="letak-meta">'+x(l.store)+' · '+x(l.foundAt)+(l.validTo?' → '+x(l.validTo):'')+' · '+vsiIzdelki.length+' izdelkov</div></div>'
       +'<div style="display:flex;gap:6px;align-items:center">'
       +(l.checked?'':'<button class="mark-btn" onclick="event.stopPropagation();markChecked('+i+')">✓ Pregledano</button>')
       +'<a href="'+x(l.url)+'" target="_blank" onclick="event.stopPropagation()" style="color:var(--m);font-family:var(--mono);font-size:10px;text-decoration:none;padding:4px">↗</a>'
       +'<button class="url-del" onclick="event.stopPropagation();delLetak('+i+')">×</button>'
       +'<span style="font-family:var(--mono);font-size:11px;color:var(--m)">'+(l.expanded?'▲':'▼')+'</span>'
       +'</div></div>'
-      +(l.expanded&&ceneHtml?ceneHtml:'')
-      +(l.expanded&&!ceneHtml?'<div style="padding:8px 14px;font-family:var(--mono);font-size:11px;color:var(--m);border-top:1px solid var(--b)">Ni najdenih cen za tvoje izdelke.</div>':'')
+      +(l.expanded?ceneHtml:'')
       +'</div>';
   }).join('');
 }
+
 function toggleLetak(i){letaki[i].expanded=!letaki[i].expanded;renderLetakList();}
 
 function updateStats(){
