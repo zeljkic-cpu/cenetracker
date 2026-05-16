@@ -305,11 +305,15 @@ async function searchAll(){
         items.forEach(function(it){
           const p=prices[String(it.id)];
           if(p) cache[it.id]=p;
-          else if(cache[it.id]&&cache[it.id].loading) cache[it.id]={error:'Ni najdeno v letakih'};
+          else cache[it.id]={top3:[],at:new Date().toLocaleTimeString('sl-SI',{hour:'2-digit',minute:'2-digit'})};
         });
-        save();renderCards();renderItems();
+        save();
+        renderCards();
+        renderItems();
         btn.disabled=false;
         txt.textContent='Poisci trenutne cene';
+        // Force re-render all cards
+        document.getElementById('pLbl').style.display='block';
       }
     }catch(e){
       if(poskusi>60){clearInterval(interval);btn.disabled=false;}
