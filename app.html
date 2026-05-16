@@ -447,9 +447,10 @@ function renderLetakList(){
 function toggleLetak(i){letaki[i].expanded=!letaki[i].expanded;renderLetakList();}
 
 function updateStats(){
-  document.getElementById('statNew').textContent=letaki.filter(function(l){return!l.checked;}).length;
-  document.getElementById('statDone').textContent=letaki.filter(function(l){return l.checked;}).length;
-  document.getElementById('statUrls').textContent=urls.length;
+  const sn=document.getElementById('statNew');
+  const sd=document.getElementById('statDone');
+  if(sn) sn.textContent=letaki.filter(function(l){return!l.checked;}).length;
+  if(sd) sd.textContent=letaki.filter(function(l){return l.checked;}).length;
 }
 function openKey(){document.getElementById('keyInp').value=apiKey;document.getElementById('keyOvl').classList.add('on');}
 function closeKey(){document.getElementById('keyOvl').classList.remove('on');}
