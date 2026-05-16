@@ -300,29 +300,31 @@ async function searchAll(){
     poskusi++;
     try{
       const s=await fetch('http://localhost:7777/status').then(r=>r.json());
-      txt.textContent=s.msg+' ('+s.done+'/'+s.total+')';
+      txt.textContent=s.msg;
 
-      if(!s.running){
+      if(!s.running || poskusi>60){
         clearInterval(interval);
-        // Naloži cene
+        await new Promise(r=>setTimeout(r,500));
         const prices=await fetch('http://localhost:7777/prices').then(r=>r.json());
+        console.log('Prices received:', JSON.stringify(prices).substring(0,200));
         items.forEach(function(it){
           const p=prices[String(it.id)];
-          if(p) cache[it.id]=p;
-          else cache[it.id]={top3:[],at:new Date().toLocaleTimeString('sl-SI',{hour:'2-digit',minute:'2-digit'})};
+          console.log('Item',it.id,it.name,'->',p?JSON.stringify(p).substring(0,100):'nothing');
+          if(p&&p.top3!==undefined) cache[it.id]=p;
+          else cache[it.id]={top3:[],at:''};
         });
         save();
-        renderCards();
+        document.getElementById('pLbl').style.display='block';
+        document.getElementById('priceCards').innerHTML=items.map(it=>buildCard(it,cache[it.id])).join('');
         renderItems();
         btn.disabled=false;
         txt.textContent='Poisci trenutne cene';
-        // Force re-render all cards
-        document.getElementById('pLbl').style.display='block';
       }
     }catch(e){
+      console.error('Polling error:',e);
       if(poskusi>60){clearInterval(interval);btn.disabled=false;}
     }
-  },3000);
+  },2000);
 }
 async function fetchItem(name){
                     const p='Search Google for: "'+name+'" cena Slovenija Lidl Hofer Mercator Spar 2026. Find current prices from search results. List up to 3 cheapest prices found. For each write exactly: STORE|PRODUCT|PRICE|UNIT|URL Write only these lines, no other text. Example: Lidl|Coca-Cola 0.5l|0.89|0.5 l|https://...';
