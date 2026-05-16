@@ -69,7 +69,12 @@ def poisci_cene_v_ozadju(items, api_key):
             iskanje_status["msg"] = f"Prebiram {store}..."
             iskanje_status["done"] = done
 
-        rezultati = beri_letake.poisci_cene(items, api_key)
+        # Zagotovi pravilen format items
+        items_ok = []
+        for it in items:
+            if isinstance(it, dict) and "name" in it:
+                items_ok.append({"id": it.get("id", it["name"]), "name": it["name"]})
+        rezultati = beri_letake.poisci_cene(items_ok, api_key)
         iskanje_status = {"running":False,"msg":"Končano!","done":len(LETAKI),"total":len(LETAKI)}
         print("✅ Iskanje zaključeno")
     except Exception as e:
