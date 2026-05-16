@@ -71,6 +71,7 @@ def ujemi_artikel(naziv, items):
 def poisci_cene(items_data, api_key):
     items = items_data
     vse_cene = {str(i["id"]): [] for i in items}
+    rezultati = {}
 
     print(f"\n🔍 Iščem v letakih: {', '.join(i['name'] for i in items)}\n")
 
@@ -130,7 +131,6 @@ def poisci_cene(items_data, api_key):
         time.sleep(0.5)
 
     # Sestavi top 3 po ceni na enoto
-    rezultati = {}
     for item in items:
         k = str(item["id"])
         cene = sorted(vse_cene.get(k, []), key=lambda x: x["pricePerUnit"])[:3]
